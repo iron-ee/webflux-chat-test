@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <title>Chat</title>
+</head>
+<body>
+    <div class="container mt-5">
+
+        <div class="form-group mt-4 border" style="height: 400px;">
+            <div id="items">
+
+            </div>
+        </div>
+        <form>
+            <div class="form-group d-flex">
+                <input type="text" id="username" placeholder="what's your name" />
+                <input type="text" id="talk" class="form-control" placeholder="talk to me plz">
+                <button id="btn-post" class="btn btn-primary ml-2">Send</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        $("#btn-post").on("click", (e) => {
+            e.preventDefault();
+            let data = {
+                username: $("#username").val(),
+                talk: $("#talk").val(),
+            };
+
+            console.log(data);
+
+            fetch("http://localhost:8080/send", {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: {'Content-Type': 'application/json; charset=utf-8',}
+            }).then(res => res.json()).then(res => {
+                console.log(res);
+            });
+        });
+
+        const eventSource = new EventSource(`http://localhost:8080/sse`);
+        eventSource.onmessage = event => {
+            console.log(event.data);
+            let items_el = document.querySelector("#items");
+
+            let item_el = document.createElement("div");
+            item_el.innerHTML = `${event.data}`;
+            items_el.appendChild(item_el);
+        };
+        eventSource.onerror = error => {
+            eventSource.close();
+        };
+    </script>
+</body>
+</html>
